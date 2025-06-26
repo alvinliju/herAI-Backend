@@ -1,0 +1,7 @@
+python-dotenv
+livekit-agents
+openai
+deepgram-sdk
+faster-whisper
+cartesia
+silero

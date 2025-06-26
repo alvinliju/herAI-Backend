@@ -1,0 +1,35 @@
+ Create LiveKit Cloud account -> done
+ Get API keys (URL, API key, secret) -> done
+ pip install livekit-agents livekit-plugins-openai livekit-plugins-google
+ Create .env with your keys
+
+Task 2: Basic Agent Connection (30 min)
+
+ Copy LiveKit voice assistant example
+ Strip out everything except basic connection
+ Test: agent connects to LiveKit room
+ Verify: see agent in LiveKit dashboard
+
+Task 3: Add Gemini (20 min)
+
+ Replace OpenAI LLM with Google Gemini
+ Add therapist system prompt
+ Test: agent responds to text in dashboard
+
+Task 4: Add Local Whisper (20 min)
+
+ Replace OpenAI STT with local Whisper
+ Test: agent transcribes audio correctly
+ Verify: no STT API costs
+
+Task 5: Add ElevenLabs TTS (20 min)
+
+ Replace TTS with ElevenLabs
+ Test: agent speaks back
+ Complete conversation loop works
+
+Task 6: Deploy (30 min)
+
+ Push to Railway/Render
+ Test deployed agent
+ Share room URL with FE friend
