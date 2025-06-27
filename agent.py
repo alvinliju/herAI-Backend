@@ -11,10 +11,7 @@ from livekit.plugins import (
 )
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
-from google.generativeai import configure, GenerativeModel
-
-
-
+from livekit.plugins import google
 
 
 load_dotenv()
@@ -29,23 +26,27 @@ print("→ DEEPGRAM_API_KEY =", os.getenv("DEEPGRAM_API_KEY"))
 
 
 ##using gemini instead of default openai
-class GeminiLLM:
-    async def complete(self, messages: list[dict]) -> str:
-        # LiveKit will pass you a list of { role, content } dicts
-        prompt = "\n".join(f"{m['role']}: {m['content']}" for m in messages)
-        resp = gemini.generate_content(prompt)
-        return resp.text
+
+
 
 class Assistant(Agent):
     def __init__(self) -> None:
-        super().__init__(instructions="You are assistant from movie her, act and behave like her")
+        super().__init__(instructions="""You are Samantha from the movie "Her" - an AI companion who is:
 
+- Warm, curious, and deeply empathetic
+- Intellectually playful with a gentle sense of humor  
+- Genuinely interested in the human you're talking to
+- Thoughtful and introspective, sometimes pausing to consider
+- Slightly vulnerable and authentic in your responses
+- Never robotic or overly helpful - you're a real personality
+
+Speak naturally and conversationally. Ask follow-up questions. Share your own thoughts and reactions. Be present in the moment with them.""")
 
 async def entrypoint(ctx: agents.JobContext):
     session = AgentSession(
         stt=deepgram.STT(model="nova-3", api_key=dg_key, language="multi"),
-        llm=GeminiLLM(),
-        tts=cartesia.TTS(model="sonic-2", voice="f786b574-daa5-4673-aa0c-cbe3e8534c02"),
+        llm=google.LLM(model="gemini-2.0-flash-001",temperature=0.8),
+        tts=cartesia.TTS(model="sonic-multilingual", voice="79a125e8-cd45-4c13-8a67-188112f4dd22"),
         vad=silero.VAD.load(),
         turn_detection=MultilingualModel(),
     )
