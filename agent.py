@@ -13,6 +13,10 @@ from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
 from livekit.plugins import google
 
+import logging
+logging.basicConfig(level=logging.INFO)
+
+session_timeout = 10 * 60  
 
 load_dotenv()
 
