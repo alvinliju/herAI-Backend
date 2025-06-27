@@ -1,9 +1,11 @@
 from dotenv import load_dotenv
-
+import os
 from livekit import agents
 from livekit.agents import AgentSession, Agent, RoomInputOptions
 from livekit.plugins import (
+    openai,
     cartesia,
+    deepgram,
     noise_cancellation,
     silero,
 )
@@ -11,23 +13,20 @@ from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
 from google.generativeai import configure, GenerativeModel
 
-from faster_whisper import WhisperModel
+
 
 
 
 load_dotenv()
 
+dg_key = os.getenv("DEEPGRAM_API_KEY")
+if not dg_key:
+    raise RuntimeError("Missing DEEPGRAM_API_KEY in .env")
 
-##whisper local for speech to text
-class WhisperSTT:
-    def __init__(self):
-        self.model = WhisperModel("base", compute_type="int8")
+import os
+print("→ DEEPGRAM_API_KEY =", os.getenv("DEEPGRAM_API_KEY"))
 
-    async def transcribe(self, audio: bytes) -> str:
-        with open("/tmp/audio.wav", "wb") as f:
-            f.write(audio)
-        segments, _ = self.model.transcribe("/tmp/audio.wav")
-        return " ".join([seg.text for seg in segments])
+
 
 ##using gemini instead of default openai
 class GeminiLLM:
@@ -44,7 +43,7 @@ class Assistant(Agent):
 
 async def entrypoint(ctx: agents.JobContext):
     session = AgentSession(
-        stt=WhisperSTT(),
+        stt=deepgram.STT(model="nova-3", api_key=dg_key, language="multi"),
         llm=GeminiLLM(),
         tts=cartesia.TTS(model="sonic-2", voice="f786b574-daa5-4673-aa0c-cbe3e8534c02"),
         vad=silero.VAD.load(),
