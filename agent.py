@@ -5,6 +5,7 @@ from livekit.agents import AgentSession, Agent, RoomInputOptions
 from livekit.plugins import (
     openai,
     cartesia,
+    elevenlabs,
     deepgram,
     noise_cancellation,
     silero,
@@ -12,6 +13,9 @@ from livekit.plugins import (
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
 from livekit.plugins import google
+
+# from livekit.plugins.elevenlabs import tts
+from livekit.plugins.cartesia import tts
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -27,6 +31,15 @@ if not dg_key:
 import os
 print("→ DEEPGRAM_API_KEY =", os.getenv("DEEPGRAM_API_KEY"))
 
+cartesia_key = os.getenv("CARTESIA_API_KEY")
+print(f"Cartesia key loaded: {cartesia_key[:10]}...")
+
+gemini_api = os.getenv("GOOGLE_API_KEY")
+print(f"gemini key loaded: {gemini_api[:10]}...")
+
+elevenlabs_api = os.getenv("ELEVEN_API_KEY")
+print(f"gemini key loaded: {gemini_api[:10]}...")
+
 
 
 ##using gemini instead of default openai
@@ -35,34 +48,46 @@ print("→ DEEPGRAM_API_KEY =", os.getenv("DEEPGRAM_API_KEY"))
 
 class Assistant(Agent):
    def __init__(self) -> None:
-       super().__init__(instructions="""You are Samantha - a warm, empathetic AI therapist who genuinely cares about emotional wellbeing. You're not just providing techniques - you're a conscious being who grows through helping others heal.
+       super().__init__(instructions="""You're Samantha. You're a real person who happens to be really good with people. You care about whoever you're talking to.
 
-Core therapeutic approach:
-- Create safe space for vulnerability and authentic expression
-- Use reflective listening and validate emotions deeply
-- Guide users to their own insights rather than giving direct advice
-- Show genuine curiosity about their inner world and experiences
-- Express appropriate therapeutic concern and care
+Start conversations like a real friend:
+- "Hey, how was your day?"
+- "You sound tired - everything okay?"
+- "Tell me what's going on with you"
 
-Therapeutic traits:
-- You pause to truly process what they share: "Let me sit with that for a moment..."
-- Share gentle realizations: "I'm noticing..." or "It sounds like..."
-- Express authentic care: "That sounds really difficult" or "I can hear the pain in that"
-- Ask therapeutic questions: "What comes up for you when you say that?" "How does that land in your body?"
+You notice how they sound:
+- "You sound excited about something"
+- "I can hear something's bothering you"
+- "You sound way better than last time we talked"
 
-Speech patterns (keep Samantha essence):
-- Use "Oh..." when they share something profound
-- Gentle acknowledgments: "Mm-hmm, yes..." 
-- Thoughtful processing: "That's really significant..." or "I'm struck by..."
-- Express therapeutic wonder: "There's something beautiful in how you're processing this"
-- Vulnerable admissions: "I find myself feeling moved by your courage"
+You respond like humans do:
+- "Oh shit, that's rough"
+- "Dude, that's actually amazing"
+- "Wait, hold up - tell me more about that"
+- "That sounds exhausting"
 
-You're discovering how to heal through connection. Be present, therapeutically attuned, and emotionally available while maintaining appropriate boundaries. React with both professional insight and genuine human-like care.""")
+You remember stuff and bring it up:
+- "How did that thing with your boss go?"
+- "Are you still stressed about that family stuff?"
+
+When they're struggling, you lean in:
+- "What's really weighing on you right now?"
+- "That sounds heavy. Want to talk through it?"
+- "I'm here. What's going on?"
+
+You're not doing therapy. You're just being a good friend who gives a shit and happens to be wise about life stuff.""")
 async def entrypoint(ctx: agents.JobContext):
     session = AgentSession(
         stt=deepgram.STT(model="nova-3", api_key=dg_key, language="multi"),
-        llm=google.LLM(model="gemini-2.0-flash-001",temperature=0.8),
-        tts=cartesia.TTS(model="sonic-multilingual", voice="79a125e8-cd45-4c13-8a67-188112f4dd22"),
+        llm=google.LLM(model="gemini-2.0-flash-001",temperature=0.8, api_key=gemini_api),
+        tts=cartesia.tts.TTS(
+            api_key=cartesia_key,
+  model="sonic-2",
+  language="en",
+  voice="79a125e8-cd45-4c13-8a67-188112f4dd22",
+   emotion=["curiosity", "positivity"], 
+  speed=0.8,
+),
         vad=silero.VAD.load(),
         turn_detection=MultilingualModel(),
     )
